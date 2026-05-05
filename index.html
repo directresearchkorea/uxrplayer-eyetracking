@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Web Browser Eye Tracking | 무료 웹 브라우저 아이트래킹 도구 - UXR Player</title>
+    <meta name="description" content="Test eye tracking for free in your browser without installation. Record, analyze, and visualize UX research data instantly. 설치 없이 브라우저에서 무료로 아이트래킹을 테스트하세요. 웹캠 녹화, 시선 추적 분석, 다중 뷰어 시각화를 제공합니다.">
+    <meta name="keywords" content="eye tracking, free eye tracking, UX research, browser eye tracking, webcam eye tracking, 아이트래킹, 무료 아이트래킹, 시선 추적, UX 리서치, 웹캠 시선 추적">
+    <meta name="author" content="UXR Player">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eyetracking.uxrplayer.com/">
+    <meta property="og:title" content="Free Web Browser Eye Tracking | 무료 웹 브라우저 아이트래킹 도구">
+    <meta property="og:description" content="Test eye tracking for free in your browser without installation. 설치 없이 웹브라우저에서 바로 아이트래킹을 무료로 테스트해 보세요.">
+    <meta property="og:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://eyetracking.uxrplayer.com/">
+    <meta property="twitter:title" content="Free Web Browser Eye Tracking | 무료 웹 브라우저 아이트래킹 도구">
+    <meta property="twitter:description" content="Test eye tracking for free in your browser without installation. 설치 없이 웹브라우저에서 바로 아이트래킹을 무료로 테스트해 보세요.">
+    <meta property="twitter:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Topbar Navigation -->
+    <nav class="topbar-nav">
+        <a href="index.html" class="topbar-logo">
+            <div>
+                <div class="logo-text">EYE TRACKING</div>
+                <div class="logo-sub">UXR PLAYER</div>
+            </div>
+        </a>
+        <div class="topbar-menu">
+            <a href="record.html" data-i18n="🎥 캠/화면 녹화">🎥 캠/화면 녹화</a>
+            <a href="eyetracking.html" data-i18n="👓 아이트래킹">👓 아이트래킹</a>
+            <a href="viewer.html" data-i18n="🗂️ 다중 뷰어">🗂️ 다중 뷰어</a>
+        </div>
+        <div class="topbar-right">
+            <button id="langToggle" class="btn outline" style="padding: 0.15rem 0.5rem; font-size: 0.75rem; min-width: 40px; margin-right: 8px;">ENG</button>
+            <span class="currentTimeDisplay"></span>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <main class="main-content">
+            <div class="landing-container">
+                <div class="landing-hero">
+                    <h1 data-i18n="EYE TRACKING">EYE TRACKING</h1>
+                    <p data-i18n="landing_desc">브라우저에서 바로 사용하는 UXR 아이트래킹 도구.<br>설치 없이 녹화하고, 분석하고, 리포팅하세요.</p>
+                </div>
+
+                <div class="landing-cards">
+                    <!-- 녹화 - 캠/화면 녹화 -->
+                    <a href="record.html" class="landing-card" id="cardRecord">
+                        <span class="card-category" data-i18n="녹화">녹화</span>
+                        <div class="landing-card-icon recording">🎥</div>
+                        <h3 data-i18n="캠/화면 녹화">캠/화면 녹화</h3>
+                        <p data-i18n="record_desc">웹캠과 화면을 동시에 녹화하고 바탕화면에 바로 저장합니다.</p>
+                    </a>
+
+                    <!-- 프로세싱 - 아이트래킹 -->
+                    <a href="eyetracking.html" class="landing-card" id="cardEyetracking">
+                        <span class="card-category" data-i18n="프로세싱">프로세싱</span>
+                        <div class="landing-card-icon processing">👓</div>
+                        <h3 data-i18n="아이트래킹">아이트래킹</h3>
+                        <p data-i18n="process_desc">MediaPipe 기반으로 영상에서 시선을 추적하고 결과 영상을 추출합니다.</p>
+                    </a>
+
+                    <!-- 리포팅 - 다중 뷰어 -->
+                    <a href="viewer.html" class="landing-card" id="cardViewer">
+                        <span class="card-category" data-i18n="리포팅">리포팅</span>
+                        <div class="landing-card-icon reporting">🗂️</div>
+                        <h3 data-i18n="다중 뷰어">다중 뷰어</h3>
+                        <p data-i18n="viewer_desc">Face View, Screen View, 감정 차트, 전사 텍스트를 동기화하여 통합 분석합니다.</p>
+                    </a>
+                </div>
+
+                <div class="landing-footer">
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="footer_note">💻 PC 크롬 브라우저에 최적화되어 있습니다.</p>
+                    <p>eyetracking.uxrplayer.com</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="static/js/i18n.js"></script>
+    <script>
+    // Clock
+    function updateTime() {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const day = days[now.getDay()];
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        document.querySelectorAll('.currentTimeDisplay').forEach(el => {
+            el.textContent = `${yyyy}.${mm}.${dd} (${day}) ${hh}:${min}:${ss}`;
+        });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+    </script>
+</body>
+</html>

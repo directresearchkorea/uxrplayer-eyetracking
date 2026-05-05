@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Eye Tracking Analyzer | 무료 브라우저 시선 추적 분석 - UXR Player</title>
+    <meta name="description" content="Analyze gaze tracking from videos for free in your browser. Powered by MediaPipe. 브라우저에서 동영상의 시선을 무료로 추적하고 분석하세요. 설치가 필요 없는 빠르고 강력한 UXR 아이트래킹 도구입니다.">
+    <meta name="keywords" content="eye tracking analysis, gaze tracking, MediaPipe eye tracking, UX research analysis, 시선 추적 분석, 아이트래킹 렌더링, 시선 분석, 무료 아이트래킹, UX 리서치">
+    <meta name="author" content="UXR Player">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eyetracking.uxrplayer.com/eyetracking.html">
+    <meta property="og:title" content="Free Eye Tracking Analyzer | 무료 브라우저 시선 추적 분석">
+    <meta property="og:description" content="Analyze gaze tracking from videos for free in your browser. 브라우저에서 동영상의 시선을 무료로 추적하고 분석하세요.">
+    <meta property="og:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://eyetracking.uxrplayer.com/eyetracking.html">
+    <meta property="twitter:title" content="Free Eye Tracking Analyzer | 무료 브라우저 시선 추적 분석">
+    <meta property="twitter:description" content="Analyze gaze tracking from videos for free in your browser. 브라우저에서 동영상의 시선을 무료로 추적하고 분석하세요.">
+    <meta property="twitter:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .eyetracking-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            min-height: calc(100vh - 120px);
+        }
+        .video-cards-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            flex: 1;
+        }
+        @media (max-width: 1024px) {
+            .video-cards-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+        .eyetracking-videos {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            flex: 1;
+        }
+        .eyetracking-panel {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .form-group input[type="text"] {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #f9fafb;
+            color: var(--text-primary);
+        }
+        .form-group input[type="range"] {
+            width: 100%;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Diagnostics */
+        #trackingDiagnostics {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: #00ff88;
+            padding: 6px 18px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-family: monospace;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            accent-color: var(--accent-blue);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Topbar Navigation -->
+    <nav class="topbar-nav">
+        <a href="index.html" class="topbar-logo">
+            <div>
+                <div class="logo-text">EYE TRACKING</div>
+                <div class="logo-sub">UXR PLAYER</div>
+            </div>
+        </a>
+        <div class="topbar-menu">
+            <a href="record.html" data-i18n="🎥 캠/화면 녹화">🎥 캠/화면 녹화</a>
+            <a href="eyetracking.html" class="active" data-i18n="👓 아이트래킹">👓 아이트래킹</a>
+            <a href="viewer.html" data-i18n="🗂️ 다중 뷰어">🗂️ 다중 뷰어</a>
+        </div>
+        <div class="topbar-right">
+            <button id="langToggle" class="btn outline" style="padding: 0.15rem 0.5rem; font-size: 0.75rem; min-width: 40px; margin-right: 8px;">ENG</button>
+            <span class="currentTimeDisplay"></span>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="dashboard-scroll-area">
+                <div class="dashboard-container eyetracking-layout">
+                    
+                    <!-- Left Column: Videos -->
+                    <div class="eyetracking-videos">
+                        <section class="controls-card" style="margin-bottom: 0;">
+                            <button id="playPauseBtn" class="btn outline" data-i18n="Play">Play</button>
+                            <div class="timeline-container">
+                                <input type="range" id="masterTimeline" min="0" max="100" value="0">
+                                <span id="timeDisplay" class="time-display">00:00 / 00:00</span>
+                            </div>
+                        </section>
+
+                        <div class="video-cards-wrapper">
+                        <div class="draggable-card" style="flex:1; border: 1px solid var(--border-color); background: var(--bg-card); display: flex; flex-direction: column;">
+                            <div class="drag-header" style="margin-bottom: 1rem;">
+                                <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);" data-i18n="👤 Face View">👤 Face View</h3>
+                            </div>
+                            <div class="video-container" style="position: relative; flex: 1; min-height: 250px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: var(--border-radius); overflow: hidden;">
+                                <label id="faceOverlay" for="faceUpload" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer; z-index: 5; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                    <span style="font-size: 2.5rem; margin-bottom: 0.5rem;">📂</span>
+                                    <span style="font-size: 0.85rem;" data-i18n="Face View 영상을 선택하세요">Face View 영상을 선택하세요</span>
+                                    <span style="font-size: 0.72rem; margin-top: 4px; opacity: 0.6;" data-i18n="MP4, WebM 지원">MP4, WebM 지원</span>
+                                </label>
+                                <input type="file" id="faceUpload" accept="video/*" style="display:none;">
+                                <video id="faceVideo" class="widget-video" controls playsinline style="visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; outline: none;"></video>
+                                <canvas id="faceTrackingCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="draggable-card" style="flex:1; border: 1px solid var(--border-color); background: var(--bg-card); display: flex; flex-direction: column;">
+                            <div class="drag-header" style="margin-bottom: 1rem;">
+                                <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);" data-i18n="💻 Screen / Game View">💻 Screen / Game View</h3>
+                            </div>
+                            <div class="video-container" style="position: relative; flex: 1; min-height: 250px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: var(--border-radius); overflow: hidden;">
+                                <label id="screenOverlay" for="screenUpload" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer; z-index: 5; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                    <span style="font-size: 2.5rem; margin-bottom: 0.5rem;">📂</span>
+                                    <span style="font-size: 0.85rem;" data-i18n="Screen / Game View 영상을 선택하세요">Screen / Game View 영상을 선택하세요</span>
+                                    <span style="font-size: 0.72rem; margin-top: 4px; opacity: 0.6;" data-i18n="MP4, WebM 지원">MP4, WebM 지원</span>
+                                </label>
+                                <input type="file" id="screenUpload" accept="video/*" style="display:none;">
+                                <video id="mainVideo" class="widget-video" controls playsinline style="visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; outline: none;"></video>
+                                <canvas id="eyeTrackingCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></canvas>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Settings Panel -->
+                    <div class="eyetracking-panel">
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <div style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--accent-blue); display: flex; align-items: flex-start; gap: 6px; background: rgba(56, 189, 248, 0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2);">
+                                <span>⚡</span>
+                                <div>
+                                    <strong style="display:block; margin-bottom: 2px;" data-i18n="초고속 렌더링 활성화">초고속 렌더링 활성화</strong>
+                                    <span data-i18n="render_desc">브라우저 내에서 WebCodecs 기반으로 영상을 렌더링합니다. 결과는 로컬에 다운로드됩니다.</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button id="btnSample" class="btn outline" style="padding:0.75rem; flex: 1; font-size: 0.85rem;" data-i18n="🔍 샘플링 (10%)">🔍 샘플링 (10%)</button>
+                                <button id="btnRecord" class="btn dark-action" style="padding:0.75rem; flex: 1;" data-i18n="👓 분석 시작">👓 분석 시작</button>
+                                <button id="btnStopTrack" class="btn" style="padding:0.75rem; flex: 1; background:#ef4444; color:#fff; border:none; border-radius:8px; font-weight:600; font-size:0.85rem;" disabled data-i18n="🛑 분석 중지">🛑 분석 중지</button>
+                            </div>
+                            <p id="recordStatus" style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-top: 5px;"></p>
+                        </div>
+
+                        <h3 style="margin:0; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;" data-i18n="옵션 및 다운로드">옵션 및 다운로드</h3>
+                        
+                        <div class="form-group">
+                            <label data-i18n="생성될 파일 이름">생성될 파일 이름</label>
+                            <input type="text" id="optFilename" value="eyetracking_user" />
+                        </div>
+
+                        
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="optOptimize" checked>
+                            <label for="optOptimize" data-i18n="최적화 진행 (기본 파라미터 적용)">최적화 진행 (기본 파라미터 적용)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="optFineTune">
+                            <label for="optFineTune" data-i18n="미세조정 진행 (수동 조절)">미세조정 진행 (수동 조절)</label>
+                        </div>
+
+                        <hr style="border:0; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+
+                        <!-- Fine tuning controls (Disabled by default unless checked) -->
+                        <div id="fineTuneControls" style="display: flex; flex-direction: column; gap: 1rem; opacity: 0.5; pointer-events: none;">
+                            <div class="form-group">
+                                <label data-i18n="검출 옵션 (민감도)">검출 옵션 (민감도) <span id="valSensitivity" style="font-weight:normal;float:right;">0.1</span></label>
+                                <input type="range" id="paramSensitivity" min="0.1" max="0.9" step="0.1" value="0.1">
+                                <small style="color: var(--text-secondary)" data-i18n="낮을수록 과격한 환경에서도 억지로 검출합니다.">낮을수록 과격한 환경에서도 억지로 검출합니다.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label data-i18n="Y 축 홍채 상하 영점 조절">Y 축 홍채 상하 영점 조절 <span id="valBaseline" style="font-weight:normal;float:right;">-0.20</span></label>
+                                <input type="range" id="paramBaselineY" min="-0.5" max="0.5" step="0.05" value="-0.20">
+                                <small style="color: var(--text-secondary)" data-i18n="값이 클수록 화면(스크린)의 아래쪽을 보게 맵핑됩니다.">값이 클수록 화면(스크린)의 아래쪽을 보게 맵핑됩니다.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label data-i18n="X축 배율 폭">X축 배율 폭 <span id="valScaleX" style="font-weight:normal;float:right;">1.5</span></label>
+                                <input type="range" id="paramScaleX" min="1.0" max="5.0" step="0.1" value="1.5">
+                                <small style="color: var(--text-secondary)" data-i18n="값이 클수록 좌우 시선 이동 폭이 넓어집니다.">값이 클수록 좌우 시선 이동 폭이 넓어집니다.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label data-i18n="잔상 표시 빈도 (ms)">잔상 표시 빈도 (ms) <span id="valTrailFreq" style="font-weight:normal;float:right;">100</span></label>
+                                <input type="range" id="paramTrailFreq" min="50" max="1000" step="50" value="100">
+                                <small style="color: var(--text-secondary)" data-i18n="값이 작을수록 도넛이 촘촘하게 그려집니다.">값이 작을수록 도넛이 촘촘하게 그려집니다.</small>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="paramShowArrow" checked>
+                                <label for="paramShowArrow" data-i18n="동공 방향 화살 표시">동공 방향 화살 표시</label>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="paramShowDonut" checked>
+                                <label for="paramShowDonut" data-i18n="시선 추적 잔상(도넛) 표시">시선 추적 잔상(도넛) 표시</label>
+                            </div>
+
+                            <hr style="border:0; border-top: 1px solid var(--border-color); margin: 0.5rem 0;">
+                            <small style="color: var(--accent-blue); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;" data-i18n="고급 보정 옵션">고급 보정 옵션</small>
+
+                            <div class="form-group">
+                                <label data-i18n="X축(좌우) 영점 조절">X축(좌우) 영점 조절 <span id="valCamOffsetX" style="font-weight:normal;float:right;">0</span></label>
+                                <input type="range" id="paramCamOffsetX" min="-0.5" max="0.5" step="0.01" value="0">
+                                <small style="color: var(--text-secondary)" data-i18n="시선이 치우칠 경우 좌(-) 우(+)로 조정하세요.">시선이 치우칠 경우 좌(-) 우(+)로 조정하세요.</small>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="Y축(상하) 영점 조절">Y축(상하) 영점 조절 <span id="valCamOffsetY" style="font-weight:normal;float:right;">0</span></label>
+                                <input type="range" id="paramCamOffsetY" min="-0.5" max="0.5" step="0.01" value="0">
+                                <small style="color: var(--text-secondary)" data-i18n="시선이 위로 치우치면 슬라이더를 오른쪽(+)으로, 아래로 치우치면 왼쪽(-)으로 조절하세요.">시선이 위로 치우치면 슬라이더를 오른쪽(+)으로, 아래로 치우치면 왼쪽(-)으로 조절하세요.</small>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="paramAutoScale" checked>
+                                <label for="paramAutoScale" data-i18n="자동 영점 보정 (Auto Min/Max Scaling)">자동 영점 보정 (Auto Min/Max Scaling)</label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="paramHeadPose" checked>
+                                <label for="paramHeadPose" data-i18n="머리 자세 보정 (Head Pose)">머리 자세 보정 (Head Pose)</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label data-i18n="블링크 감지 임계값 (EAR)">블링크 감지 임계값 (EAR) <span id="valBlinkEAR" style="font-weight:normal;float:right;">0.20</span></label>
+                                <input type="range" id="paramBlinkEAR" min="0.10" max="0.35" step="0.01" value="0.20">
+                                <small style="color: var(--text-secondary)" data-i18n="값이 낮으면 감은 눈만, 높으면 살짝 감아도 블링크로 처리합니다.">값이 낮으면 감은 눈만, 높으면 살짝 감아도 블링크로 처리합니다.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label data-i18n="시선 안정화 (스무딩 프레임 수)">시선 안정화 (스무딩 프레임 수) <span id="valSmoothing" style="font-weight:normal;float:right;">5</span></label>
+                                <input type="range" id="paramSmoothing" min="1" max="15" step="1" value="5">
+                                <small style="color: var(--text-secondary)" data-i18n="값이 클수록 시선이 부드럽지만 반응이 느려집니다.">값이 클수록 시선이 부드럽지만 반응이 느려집니다.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label data-i18n="Fixation 속도 임계값 (px/frame)">Fixation 속도 임계값 (px/frame) <span id="valFixation" style="font-weight:normal;float:right;">30</span></label>
+                                <input type="range" id="paramFixationThreshold" min="5" max="80" step="1" value="30">
+                                <small style="color: var(--text-secondary)" data-i18n="시선 이동 속도가 이 값 이하이면 Fixation(응시)으로 판정합니다.">시선 이동 속도가 이 값 이하이면 Fixation(응시)으로 판정합니다.</small>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="paramShowFixation" checked>
+                                <label for="paramShowFixation" data-i18n="Fixation/Saccade 시각화">Fixation/Saccade 시각화</label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Diagnostics HUD -->
+    <div id="trackingDiagnostics"></div>
+
+    <!-- Scripts -->
+    <script src="static/js/i18n.js"></script>
+    <script src="static/js/eyetracking.js"></script>
+
+    <script>
+    // Clock
+    (function() {
+        function updateTime() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const day = days[now.getDay()];
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            document.querySelectorAll('.currentTimeDisplay').forEach(el => {
+                el.textContent = `${yyyy}.${mm}.${dd} (${day}) ${hh}:${min}:${ss}`;
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    })();
+    </script>
+</body>
+</html>

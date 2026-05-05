@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam & Screen Recorder | 무료 브라우저 캠/화면 녹화 - UXR Player</title>
+    <meta name="description" content="Record your webcam and screen simultaneously in the browser for free. No installation required. 웹브라우저에서 웹캠과 화면을 동시에 무료로 녹화하세요. 아이트래킹 및 UX 리서치를 위한 완벽한 도구입니다.">
+    <meta name="keywords" content="screen recorder, webcam recorder, free screen record, UX research, 화면 녹화, 웹캠 녹화, 무료 녹화, UX 리서치">
+    <meta name="author" content="UXR Player">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eyetracking.uxrplayer.com/record.html">
+    <meta property="og:title" content="Webcam & Screen Recorder | 무료 브라우저 캠/화면 녹화">
+    <meta property="og:description" content="Record your webcam and screen simultaneously in the browser for free. 웹브라우저에서 웹캠과 화면을 동시에 무료로 녹화하세요.">
+    <meta property="og:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://eyetracking.uxrplayer.com/record.html">
+    <meta property="twitter:title" content="Webcam & Screen Recorder | 무료 브라우저 캠/화면 녹화">
+    <meta property="twitter:description" content="Record your webcam and screen simultaneously in the browser for free. 웹브라우저에서 웹캠과 화면을 동시에 무료로 녹화하세요.">
+    <meta property="twitter:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+    <link rel="stylesheet" href="static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .record-section {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .record-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .record-section-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .btn-reconnect, .btn-stop-conn {
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-reconnect { color: var(--accent-blue); }
+        .btn-reconnect:hover { text-decoration: underline; }
+        .btn-stop-conn { color: #ef4444; }
+        .btn-stop-conn:hover { text-decoration: underline; }
+
+        .preview-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .preview-container .status-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 2;
+        }
+        .status-badge.connected {
+            background: #10b981;
+            color: #fff;
+        }
+        .status-badge.disconnected {
+            background: #6b7280;
+            color: #fff;
+        }
+        .status-badge.recording {
+            background: #ef4444;
+            color: #fff;
+            animation: pulse-rec 1s infinite;
+        }
+        @keyframes pulse-rec {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .preview-placeholder {
+            color: #6b7280;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .record-description {
+            margin-top: 0.75rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Bottom Controls */
+        .record-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            position: sticky;
+            bottom: 1rem;
+        }
+        .timer-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-primary);
+            min-width: 120px;
+            text-align: center;
+        }
+        .btn-record-start {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+        .btn-record-start:hover { background: #dc2626; }
+        .btn-record-start:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-record-stop {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--action-dark);
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+        .btn-record-stop:hover { background: var(--action-dark-hover); }
+        .btn-record-stop:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .record-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .record-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Audio Level Meter */
+        .audio-meter {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            z-index: 3;
+            background: rgba(0,0,0,0.5);
+            border-radius: 6px;
+            padding: 6px 8px;
+        }
+        .audio-meter .meter-bar {
+            width: 5px;
+            background: #10b981;
+            border-radius: 2px;
+            transition: height 0.08s ease;
+            min-height: 3px;
+        }
+        .audio-meter .meter-label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.7);
+            margin-right: 4px;
+            align-self: center;
+        }
+        .audio-meter.muted .meter-bar {
+            background: #6b7280;
+        }
+
+        /* Warning Toast */
+        .audio-warning {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* Progress Log */
+        .progress-panel {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+        }
+        .progress-panel h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        #progressLog {
+            list-style: none;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Topbar Navigation -->
+    <nav class="topbar-nav">
+        <a href="index.html" class="topbar-logo">
+            <div>
+                <div class="logo-text">EYE TRACKING</div>
+                <div class="logo-sub">UXR PLAYER</div>
+            </div>
+        </a>
+        <div class="topbar-menu">
+            <a href="record.html" class="active" data-i18n="🎥 캠/화면 녹화">🎥 캠/화면 녹화</a>
+            <a href="eyetracking.html" data-i18n="👓 아이트래킹">👓 아이트래킹</a>
+            <a href="viewer.html" data-i18n="🗂️ 다중 뷰어">🗂️ 다중 뷰어</a>
+        </div>
+        <div class="topbar-right">
+            <button id="langToggle" class="btn outline" style="padding: 0.15rem 0.5rem; font-size: 0.75rem; min-width: 40px; margin-right: 8px;">ENG</button>
+            <span class="currentTimeDisplay"></span>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <main class="main-content">
+            <div class="dashboard-scroll-area">
+                <div class="dashboard-container" style="padding:1.5rem;">
+
+                    <div class="record-grid">
+                        <!-- Face / Webcam View -->
+                        <div class="record-section">
+                            <div class="record-section-header">
+                                <h3 data-i18n="👤 캠/마이크 (Face View)">👤 캠/마이크 (Face View)</h3>
+                                <div>
+                                    <button class="btn-stop-conn" id="btnStopFace" style="display:none; margin-right:8px;" data-i18n="연결 중지">연결 중지</button>
+                                    <button class="btn-reconnect" id="btnReconnectFace" data-i18n="다시 연결">다시 연결</button>
+                                </div>
+                            </div>
+                            <div class="preview-container" id="facePreviewBox">
+                                <span class="status-badge disconnected" id="faceStatus" data-i18n="대기 중">대기 중</span>
+                                <video id="facePreview" autoplay muted playsinline></video>
+                                <div class="audio-meter" id="faceMeter">
+                                    <span class="meter-label">🎤</span>
+                                    <div class="meter-bar" id="faceBar1"></div>
+                                    <div class="meter-bar" id="faceBar2"></div>
+                                    <div class="meter-bar" id="faceBar3"></div>
+                                    <div class="meter-bar" id="faceBar4"></div>
+                                    <div class="meter-bar" id="faceBar5"></div>
+                                </div>
+                            </div>
+                            <p class="record-description" data-i18n="record_face_desc">웹캠 화면과 테스트 참가자의 목소리(마이크)를 녹화합니다. 표정 분석과 전사에 사용됩니다.</p>
+                        </div>
+
+                        <!-- Screen View -->
+                        <div class="record-section">
+                            <div class="record-section-header">
+                                <h3 data-i18n="🖥️ 화면/시스템 (Screen View)">🖥️ 화면/시스템 (Screen View)</h3>
+                                <div>
+                                    <button class="btn-stop-conn" id="btnStopScreen" style="display:none; margin-right:8px;" data-i18n="연결 중지">연결 중지</button>
+                                    <button class="btn-reconnect" id="btnReconnectScreen" data-i18n="다시 연결">다시 연결</button>
+                                </div>
+                            </div>
+                            <div class="preview-container" id="screenPreviewBox">
+                                <span class="status-badge disconnected" id="screenStatus" data-i18n="대기 중">대기 중</span>
+                                <video id="screenPreview" autoplay muted playsinline></video>
+                                <div class="audio-meter muted" id="screenMeter">
+                                    <span class="meter-label">🔊</span>
+                                    <div class="meter-bar" id="screenBar1"></div>
+                                    <div class="meter-bar" id="screenBar2"></div>
+                                    <div class="meter-bar" id="screenBar3"></div>
+                                    <div class="meter-bar" id="screenBar4"></div>
+                                    <div class="meter-bar" id="screenBar5"></div>
+                                </div>
+                            </div>
+                            <p class="record-description" data-i18n="record_screen_desc">PC 모니터 화면 또는 모바일 미러링 창과 해당 기기의 소리(시스템 오디오)를 녹화합니다.</p>
+                        </div>
+                    </div>
+
+                    <!-- Audio Warning Toast -->
+                    <div class="audio-warning" id="audioWarning" data-i18n="audio_warning">⚠️ 시스템 오디오가 꺼져 있습니다. 화면 공유 시 "시스템 오디오 공유"를 활성화해주세요.</div>
+
+                    <!-- Recording Controls -->
+                    <div class="record-controls">
+                        <span class="timer-display" id="timerDisplay">00:00:00</span>
+                        <button class="btn-record-start" id="btnStartRecord" data-i18n="● 녹화 시작">● 녹화 시작</button>
+                        <button class="btn-record-stop" id="btnStopRecord" disabled data-i18n="■ 녹화 중지">■ 녹화 중지</button>
+                    </div>
+
+                    <!-- Progress Log -->
+                    <div class="progress-panel">
+                        <h4 data-i18n="📋 진행 로그">📋 진행 로그</h4>
+                        <ul id="progressLog"></ul>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="static/js/i18n.js"></script>
+    <script>
+    // Clock
+    (function() {
+        function updateTime() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const day = days[now.getDay()];
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            document.querySelectorAll('.currentTimeDisplay').forEach(el => {
+                el.textContent = `${yyyy}.${mm}.${dd} (${day}) ${hh}:${min}:${ss}`;
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    })();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let faceStream = null;
+        let screenStream = null;
+        let faceRecorder = null;
+        let screenRecorder = null;
+        let faceChunks = [];
+        let screenChunks = [];
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+
+        const facePreview = document.getElementById('facePreview');
+        const screenPreview = document.getElementById('screenPreview');
+        const faceStatus = document.getElementById('faceStatus');
+        const screenStatus = document.getElementById('screenStatus');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const btnStart = document.getElementById('btnStartRecord');
+        const btnStop = document.getElementById('btnStopRecord');
+
+        // --- Audio Level Meter ---
+        let faceAudioCtx = null, screenAudioCtx = null;
+        let faceAnalyser = null, screenAnalyser = null;
+        let meterAnimId = null;
+
+        function startAudioMeter(stream, prefix) {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaStreamSource(stream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            analyser.smoothingTimeConstant = 0.7;
+            source.connect(analyser);
+            return { audioCtx, analyser };
+        }
+
+        function updateMeterBars(analyser, prefix) {
+            if (!analyser) return;
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(data);
+
+            const bandSize = Math.floor(data.length / 5);
+            for (let i = 1; i <= 5; i++) {
+                const start = (i - 1) * bandSize;
+                let sum = 0;
+                for (let j = start; j < start + bandSize; j++) sum += data[j];
+                const avg = sum / bandSize;
+                const h = Math.max(3, (avg / 255) * 40);
+                const bar = document.getElementById(`${prefix}Bar${i}`);
+                if (bar) {
+                    bar.style.height = h + 'px';
+                    const pct = avg / 255;
+                    bar.style.background = pct > 0.85 ? '#ef4444' : pct > 0.6 ? '#f59e0b' : '#10b981';
+                }
+            }
+        }
+
+        function animateMeters() {
+            updateMeterBars(faceAnalyser, 'face');
+            updateMeterBars(screenAnalyser, 'screen');
+            meterAnimId = requestAnimationFrame(animateMeters);
+        }
+        animateMeters();
+
+        // --- Connect Webcam ---
+        async function connectFace() {
+            try {
+                faceStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 1280, height: 720 },
+                    audio: true
+                });
+                facePreview.srcObject = faceStream;
+                faceStatus.textContent = '연결됨';
+                faceStatus.className = 'status-badge connected';
+
+                const hasAudio = faceStream.getAudioTracks().length > 0;
+                if (hasAudio) {
+                    const m = startAudioMeter(faceStream, 'face');
+                    faceAudioCtx = m.audioCtx;
+                    faceAnalyser = m.analyser;
+                    document.getElementById('faceMeter').classList.remove('muted');
+                } else {
+                    document.getElementById('faceMeter').classList.add('muted');
+                }
+
+                addProgressLog(hasAudio ? window.t('log_face_connected_mic') : window.t('log_face_connected'));
+                document.getElementById('btnStopFace').style.display = 'inline-block';
+            } catch(e) {
+                faceStatus.textContent = '연결 실패';
+                faceStatus.className = 'status-badge disconnected';
+                document.getElementById('btnStopFace').style.display = 'none';
+                console.error('Webcam error:', e);
+                addProgressLog(window.t('log_face_failed') + e.message, true);
+            }
+        }
+
+        // --- Connect Screen ---
+        async function connectScreen() {
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: 'always' },
+                    audio: true
+                });
+                screenPreview.srcObject = screenStream;
+                screenStatus.textContent = '연결됨';
+                screenStatus.className = 'status-badge connected';
+
+                const hasAudio = screenStream.getAudioTracks().length > 0;
+                if (hasAudio) {
+                    const m = startAudioMeter(screenStream, 'screen');
+                    screenAudioCtx = m.audioCtx;
+                    screenAnalyser = m.analyser;
+                    document.getElementById('screenMeter').classList.remove('muted');
+                    addProgressLog(window.t('log_screen_connected'));
+                    document.getElementById('btnStopScreen').style.display = 'inline-block';
+                } else {
+                    document.getElementById('screenMeter').classList.add('muted');
+                    const warn = document.getElementById('audioWarning');
+                    warn.style.display = 'block';
+                    setTimeout(() => { warn.style.display = 'none'; }, 6000);
+                    addProgressLog(window.t('log_audio_warning_sys'), true);
+                    document.getElementById('btnStopScreen').style.display = 'inline-block';
+                }
+
+                screenStream.getVideoTracks()[0].onended = () => {
+                    screenStatus.textContent = '연결 해제됨';
+                    screenStatus.className = 'status-badge disconnected';
+                    document.getElementById('btnStopScreen').style.display = 'none';
+                    screenStream = null;
+                    screenAnalyser = null;
+                };
+            } catch(e) {
+                screenStatus.textContent = '연결 실패';
+                screenStatus.className = 'status-badge disconnected';
+                document.getElementById('btnStopScreen').style.display = 'none';
+                console.error('Screen share error:', e);
+            }
+        }
+
+        document.getElementById('btnReconnectFace').addEventListener('click', connectFace);
+        document.getElementById('btnReconnectScreen').addEventListener('click', connectScreen);
+
+        document.getElementById('btnStopFace').addEventListener('click', () => {
+            if (faceStream) {
+                faceStream.getTracks().forEach(t => t.stop());
+                faceStream = null;
+            }
+            facePreview.srcObject = null;
+            faceStatus.textContent = '연결 해제됨';
+            faceStatus.className = 'status-badge disconnected';
+            document.getElementById('btnStopFace').style.display = 'none';
+            document.getElementById('faceMeter').classList.add('muted');
+            addProgressLog(window.t('log_face_stopped'));
+        });
+
+        document.getElementById('btnStopScreen').addEventListener('click', () => {
+            if (screenStream) {
+                screenStream.getTracks().forEach(t => t.stop());
+                screenStream = null;
+            }
+            screenPreview.srcObject = null;
+            screenStatus.textContent = '연결 해제됨';
+            screenStatus.className = 'status-badge disconnected';
+            document.getElementById('btnStopScreen').style.display = 'none';
+            document.getElementById('screenMeter').classList.add('muted');
+            addProgressLog(window.t('log_screen_stopped'));
+        });
+
+        // --- Timer ---
+        function updateTimer() {
+            elapsedSeconds++;
+            const h = String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((elapsedSeconds % 3600) / 60)).padStart(2, '0');
+            const s = String(elapsedSeconds % 60).padStart(2, '0');
+            timerDisplay.textContent = `${h}:${m}:${s}`;
+        }
+
+        function getTimestamp() {
+            const d = new Date();
+            const pad = n => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+        }
+
+        // --- Download helper (replaces server upload) ---
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+        }
+
+        // --- Start Recording ---
+        btnStart.addEventListener('click', async () => {
+            if (!screenStream) {
+                await connectScreen();
+            }
+            if (!faceStream && !screenStream) {
+                alert('웹캠 또는 화면 공유가 연결되어야 녹화할 수 있습니다.');
+                return;
+            }
+
+            if (screenStream && screenStream.getAudioTracks().length === 0) {
+                const warn = document.getElementById('audioWarning');
+                warn.style.display = 'block';
+                setTimeout(() => { warn.style.display = 'none'; }, 6000);
+                addProgressLog(window.t('log_no_audio_start'), true);
+            }
+
+            const ts = getTimestamp();
+            faceChunks = [];
+            screenChunks = [];
+
+            if (faceStream) {
+                faceRecorder = new MediaRecorder(faceStream, { mimeType: 'video/webm;codecs=vp9' });
+                faceRecorder.ondataavailable = e => { if (e.data.size > 0) faceChunks.push(e.data); };
+                faceRecorder.start();
+                faceStatus.textContent = '● 녹화 중';
+                faceStatus.className = 'status-badge recording';
+            }
+
+            if (screenStream) {
+                screenRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm;codecs=vp9' });
+                screenRecorder.ondataavailable = e => { if (e.data.size > 0) screenChunks.push(e.data); };
+                screenRecorder.start();
+                screenStatus.textContent = '● 녹화 중';
+                screenStatus.className = 'status-badge recording';
+            }
+
+            elapsedSeconds = 0;
+            timerDisplay.textContent = '00:00:00';
+            timerInterval = setInterval(updateTimer, 1000);
+
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+
+            addProgressLog(window.t('log_record_start'));
+        });
+
+        // --- Stop Recording → Download locally ---
+        btnStop.addEventListener('click', async () => {
+            const ts = getTimestamp();
+
+            clearInterval(timerInterval);
+            timerInterval = null;
+
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+
+            addProgressLog(window.t('log_record_stop'));
+
+            const getFaceBlob = new Promise(resolve => {
+                if (faceRecorder && faceRecorder.state === 'recording') {
+                    faceRecorder.onstop = () => resolve(new Blob(faceChunks, { type: 'video/webm' }));
+                    faceRecorder.stop();
+                    faceStatus.textContent = '연결됨';
+                    faceStatus.className = 'status-badge connected';
+                } else resolve(null);
+            });
+
+            const getScreenBlob = new Promise(resolve => {
+                if (screenRecorder && screenRecorder.state === 'recording') {
+                    screenRecorder.onstop = () => resolve(new Blob(screenChunks, { type: 'video/webm' }));
+                    screenRecorder.stop();
+                    screenStatus.textContent = '연결됨';
+                    screenStatus.className = 'status-badge connected';
+                } else resolve(null);
+            });
+
+            const [faceBlob, screenBlob] = await Promise.all([getFaceBlob, getScreenBlob]);
+
+            if (!faceBlob && !screenBlob) return;
+
+            // Download files locally (replaces server upload)
+            if (faceBlob) {
+                downloadBlob(faceBlob, `record_face_${ts}.webm`);
+                addProgressLog(window.t('log_download_face') + `record_face_${ts}.webm`);
+            }
+            if (screenBlob) {
+                downloadBlob(screenBlob, `record_screen_${ts}.webm`);
+                addProgressLog(window.t('log_download_screen') + `record_screen_${ts}.webm`);
+            }
+
+            addProgressLog(window.t('log_saved'));
+        });
+
+        // Progress log helper
+        window.addProgressLog = function(message, isError = false) {
+            const logBox = document.getElementById('progressLog');
+            if (!logBox) return;
+            const li = document.createElement('li');
+            li.style.color = isError ? '#ef4444' : 'var(--text-secondary)';
+            const timeStr = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+            li.innerHTML = `<span style="opacity:0.6; font-size:0.75rem;">[${timeStr}]</span> ${message}`;
+            logBox.appendChild(li);
+            logBox.scrollTop = logBox.scrollHeight;
+        };
+
+        addProgressLog(window.t('log_record_loaded'));
+    });
+    </script>
+</body>
+</html>

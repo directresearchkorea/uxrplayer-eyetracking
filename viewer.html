@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX Research Multi Viewer | 다중 뷰어 통합 분석 - UXR Player</title>
+    <meta name="description" content="Synchronize and analyze UX research data (Face View, Screen View) in one dashboard. 다중 영상을 동기화하여 한 번에 재생하고 분석하는 무료 UXR 대시보드 뷰어입니다.">
+    <meta name="keywords" content="UX research dashboard, multi video viewer, sync videos, UX 리서치, 다중 뷰어, 영상 동기화 재생, 사용성 테스트">
+    <meta name="author" content="UXR Player">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://eyetracking.uxrplayer.com/viewer.html">
+    <meta property="og:title" content="UX Research Multi Viewer | 다중 뷰어 통합 분석">
+    <meta property="og:description" content="Synchronize and analyze UX research data in one dashboard. 다중 영상을 동기화하여 한 번에 재생하고 분석하는 무료 UXR 대시보드 뷰어입니다.">
+    <meta property="og:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://eyetracking.uxrplayer.com/viewer.html">
+    <meta property="twitter:title" content="UX Research Multi Viewer | 다중 뷰어 통합 분석">
+    <meta property="twitter:description" content="Synchronize and analyze UX research data in one dashboard. 다중 영상을 동기화하여 한 번에 재생하고 분석하는 무료 UXR 대시보드 뷰어입니다.">
+    <meta property="twitter:image" content="https://eyetracking.uxrplayer.com/static/og-image.jpg">
+    <link rel="stylesheet" href="static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Topbar Navigation -->
+    <nav class="topbar-nav">
+        <a href="index.html" class="topbar-logo">
+            <div>
+                <div class="logo-text">EYE TRACKING</div>
+                <div class="logo-sub">UXR PLAYER</div>
+            </div>
+        </a>
+        <div class="topbar-menu">
+            <a href="record.html" data-i18n="🎥 캠/화면 녹화">🎥 캠/화면 녹화</a>
+            <a href="eyetracking.html" data-i18n="👓 아이트래킹">👓 아이트래킹</a>
+            <a href="viewer.html" class="active" data-i18n="🗂️ 다중 뷰어">🗂️ 다중 뷰어</a>
+        </div>
+        <div class="topbar-right">
+            <button id="langToggle" class="btn outline" style="padding: 0.15rem 0.5rem; font-size: 0.75rem; min-width: 40px; margin-right: 8px;">ENG</button>
+            <span class="currentTimeDisplay"></span>
+        </div>
+    </nav>
+
+    <div class="layout-wrapper">
+        <main class="main-content">
+            <div class="dashboard-scroll-area">
+                <div class="dashboard-container">
+                    
+                    <!-- Player Controls Section -->
+                    <section class="controls-card">
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <button id="playPauseBtn" class="btn outline" style="padding:0.3rem 0.75rem; font-size:0.85rem; min-width:60px;" data-i18n="▶ Play">▶ Play</button>
+                            <button id="resetViewerBtn" class="btn outline" title="모든 영상 초기화" style="padding:0.3rem 0.75rem; font-size:0.85rem; color:#6b7280; border-color:#d1d5db; min-width:60px;" data-i18n="🔄 초기화">🔄 초기화</button>
+                        </div>
+                        <div class="timeline-container">
+                            <input type="range" id="masterTimeline" min="0" max="100" value="0">
+                            <span id="timeDisplay" class="time-display">00:00 / 00:00</span>
+                        </div>
+                        
+                        <div style="display:flex; gap:0.5rem; padding-left:1rem; border-left:1px solid var(--border-color);">
+                            <button id="btnToggleLayout" class="btn outline" title="세로/가로 레이아웃 전환" style="padding:0.3rem 0.75rem; font-size:0.85rem;" data-i18n="🔄 레이아웃 전환">🔄 레이아웃 전환</button>
+                        </div>
+
+                        <div class="height-control-container">
+                            <label for="cardHeightSlider" data-i18n="Screen Height">Screen Height</label>
+                            <input type="range" id="cardHeightSlider" class="height-slider" min="200" max="800" value="350" step="10">
+                        </div>
+                    </section>
+                    
+                    <!-- Unified Dynamic Grid Layout -->
+                    <section class="quadrant-grid horizontal-layout" id="dragContainer">
+                        <!-- 1. Top-Left: Face View -->
+                        <div class="draggable-card" draggable="true" id="card-face">
+                            <div class="drag-header">
+                                <h3>👤 Face View</h3>
+                                <div class="header-actions">
+                                    <span class="delete-widget" title="Remove">🗑️</span>
+                                    <span class="drag-handle">⋮⋮</span>
+                                </div>
+                            </div>
+                            <div class="video-container" style="position: relative;">
+                                <label class="open-video-badge" title="Upload Video">
+                                    📁 Open
+                                    <input type="file" class="widget-video-upload" accept="video/*" style="display:none;">
+                                </label>
+                                <video id="faceVideo" class="widget-video" controls style="visibility: hidden;"></video>
+                                <canvas id="faceTrackingCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></canvas>
+                            </div>
+                        </div>
+                        
+
+
+                        <!-- 3. Bottom-Left: Screen View -->
+                        <div class="draggable-card" draggable="true" id="card-screen">
+                            <div class="drag-header">
+                                <h3>🖥️ Screen / Game View</h3>
+                                <div class="header-actions">
+                                    <span class="delete-widget" title="Remove">🗑️</span>
+                                    <span class="drag-handle">⋮⋮</span>
+                                </div>
+                            </div>
+                            <div class="video-container" style="position: relative;">
+                                <label class="open-video-badge" title="Upload Video">
+                                    📁 Open
+                                    <input type="file" class="widget-video-upload" accept="video/*" style="display:none;">
+                                </label>
+                                <video id="mainVideo" class="widget-video" controls style="visibility: hidden;">
+                                    Your browser does not support HTML video.
+                                </video>
+                                <canvas id="eyeTrackingCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></canvas>
+                            </div>
+                        </div>
+                        
+
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- Add Widget Modal -->
+    <div id="addWidgetModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" id="closeAddWidgetModal">&times;</span>
+            <h2 class="modal-title">Add Analytics Widget</h2>
+            <div class="form-group">
+                <label for="widgetTypeSelect">Select Widget Type</label>
+                <select id="widgetTypeSelect" class="file-input" style="margin-bottom: 1.5rem;">
+                    <option value="faceView">👤 Face View</option>
+                    <option value="screenView">🖥️ Screen / Game View</option>
+                    <option value="emotionChart">😊 Emotional Status</option>
+                    <option value="transcript">🗣️ Transcripts</option>
+                    <option value="biometrics">❤️ Biometrics</option>
+                    <option value="annotation">✏️ Annotation / Markers</option>
+                </select>
+                <button id="confirmAddWidgetBtn" class="btn dark-action full-width">Add to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Sync Modal -->
+    <div id="smartSyncModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" id="closeSmartSyncModal">&times;</span>
+            <h2 class="modal-title">Intelligent Sync Detected</h2>
+            <p style="margin-bottom: 1.5rem; color: #4b5563; font-size: 0.95rem; line-height: 1.5;">
+                대시보드에 영상 타임라인이 존재합니다. 새로 불러온 영상을 기존 타임라인과 
+                <b>오디오 기반 자동 동기화(Auto-Sync)</b>하고 AI 분석을 돌리시겠습니까?
+            </p>
+            <div style="display: flex; gap: 1rem;">
+                <button id="btnDeclineSync" class="btn outline full-width" style="margin-bottom: 0;">아니오 (독립 재생)</button>
+                <button id="btnConfirmSync" class="btn dark-action full-width" style="margin-bottom: 0;">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HTML Templates for Dynamic Creation -->
+    <template id="tpl-faceView">
+        <div class="draggable-card" draggable="true">
+            <div class="drag-header">
+                <h3 class="widget-title">👤 Face View</h3>
+                <div class="header-actions">
+                    <span class="delete-widget" title="Remove">🗑️</span>
+                    <span class="drag-handle">⋮⋮</span>
+                </div>
+            </div>
+            <div class="video-container">
+                <label class="open-video-badge" title="Upload Video">
+                    📁 Open
+                    <input type="file" class="widget-video-upload" accept="video/*" style="display:none;">
+                </label>
+                <video class="widget-video" controls></video>
+            </div>
+        </div>
+    </template>
+    <template id="tpl-screenView">
+        <div class="draggable-card" draggable="true">
+            <div class="drag-header">
+                <h3 class="widget-title">🖥️ Screen View</h3>
+                <div class="header-actions">
+                    <span class="delete-widget" title="Remove">🗑️</span>
+                    <span class="drag-handle">⋮⋮</span>
+                </div>
+            </div>
+            <div class="video-container">
+                <label class="open-video-badge" title="Upload Video">
+                    📁 Open
+                    <input type="file" class="widget-video-upload" accept="video/*" style="display:none;">
+                </label>
+                <video class="widget-video" controls></video>
+            </div>
+        </div>
+    </template>
+    <template id="tpl-emotionChart">
+        <div class="draggable-card" draggable="true">
+            <div class="drag-header">
+                <h3 class="widget-title">😊 Emotional Status</h3>
+                <div class="header-actions">
+                    <span class="delete-widget" title="Remove">🗑️</span>
+                    <span class="drag-handle">⋮⋮</span>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas class="widget-chart"></canvas>
+            </div>
+        </div>
+    </template>
+    <template id="tpl-transcript">
+        <div class="draggable-card" draggable="true">
+            <div class="drag-header">
+                <h3 class="widget-title">🗣️ Transcript</h3>
+                <div class="header-actions">
+                    <span class="delete-widget" title="Remove">🗑️</span>
+                    <span class="drag-handle">⋮⋮</span>
+                </div>
+            </div>
+            <div class="transcript-box">
+                <p class="placeholder-text">데이터를 업로드하면 전사 텍스트가 표시됩니다...</p>
+            </div>
+        </div>
+    </template>
+    <template id="tpl-biometrics">
+        <div class="draggable-card bio-card" draggable="true">
+            <div class="drag-header">
+                <h3 class="widget-title">❤️ Biometrics</h3>
+                <div class="header-actions">
+                    <span class="delete-widget" title="Remove">🗑️</span>
+                    <span class="drag-handle">⋮⋮</span>
+                </div>
+            </div>
+            <div class="chart-wrapper bio-wrapper">
+                <canvas class="widget-chart"></canvas>
+            </div>
+        </div>
+    </template>
+    <template id="tpl-annotation">
+        <div class="draggable-card" draggable="true">
+            <div class="drag-header">
+                <h3 class="widget-title">✏️ Annotation / Markers</h3>
+                <div class="header-actions">
+                    <span class="annotation-mic-btn" title="음성 입력" style="cursor:pointer; font-size:1.1rem;">🎤</span>
+                    <span class="delete-widget" title="Remove">🗑️</span>
+                    <span class="drag-handle">⋮⋮</span>
+                </div>
+            </div>
+            <div class="annotation-content" style="flex:1; display:flex; flex-direction:column; min-height:0; gap:4px; padding:4px;">
+                <div class="annotation-transcript" style="flex:1; overflow-y:auto; font-size:0.85rem; color:#374151; padding:4px; min-height:40px;" contenteditable="true" data-placeholder="🎤 마이크 버튼을 누르거나 직접 입력하세요..."></div>
+                <div class="annotation-interim" style="font-size:0.8rem; color:#9ca3af; font-style:italic; min-height:16px; padding:0 4px;"></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Application Scripts -->
+    <script src="static/js/i18n.js"></script>
+    <script src="static/js/player.js"></script>
+    <script src="static/js/drag.js"></script>
+    <script src="static/js/main.js"></script>
+
+    <script>
+    // Clock
+    (function() {
+        function updateTime() {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const day = days[now.getDay()];
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            document.querySelectorAll('.currentTimeDisplay').forEach(el => {
+                el.textContent = `${yyyy}.${mm}.${dd} (${day}) ${hh}:${min}:${ss}`;
+            });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Layout Toggle Logic
+        const btnToggleLayout = document.getElementById('btnToggleLayout');
+        const dragContainer = document.getElementById('dragContainer');
+        if (btnToggleLayout && dragContainer) {
+            btnToggleLayout.addEventListener('click', () => {
+                dragContainer.classList.toggle('horizontal-layout');
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
