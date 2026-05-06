@@ -1,5 +1,5 @@
 const translations = {
-    "CAPTRUE EYE-TRACKER": { "ko": "CAPTRUE EYE-TRACKER", "en": "CAPTRUE EYE-TRACKER" },
+    "CAPTRUE": { "ko": "CAPTRUE", "en": "CAPTRUE" },
     "UXR PLAYER": { "ko": "UXR PLAYER", "en": "UXR PLAYER" },
     "🗂️ 다중 뷰어": { "ko": "🗂️ 다중 뷰어", "en": "🗂️ Multi Viewer" },
     "🎥 캠/화면 녹화": { "ko": "🎥 캠/화면 녹화", "en": "🎥 Cam/Screen Record" },
