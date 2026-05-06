@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Guide - UXR Eye Tracking</title>
+<meta name="description" content="Detailed user guide for the browser-based UXR Eye Tracking tool.">
+<link rel="stylesheet" href="static/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body { overflow-y: auto; }
+.guide-wrapper { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+.guide-hero { text-align: center; margin-bottom: 2.5rem; padding: 2.5rem 1.5rem; background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%); border-radius: 16px; border: 1px solid #e0e7ff; }
+.guide-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary); }
+.guide-hero p { color: var(--text-secondary); font-size: 1rem; }
+.workflow-diagram { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 1.5rem 0 0; }
+.wf-step { background: #fff; border: 1px solid var(--border-color); border-radius: 10px; padding: 0.6rem 1.2rem; font-weight: 600; font-size: 0.85rem; box-shadow: var(--shadow-sm); }
+.wf-step:nth-child(1) { color: #ef4444; border-color: #fecaca; }
+.wf-step:nth-child(3) { color: #7c3aed; border-color: #ddd6fe; }
+.wf-step:nth-child(5) { color: #3b82f6; border-color: #bfdbfe; }
+.wf-arrow { font-size: 1.2rem; color: var(--text-light); }
+.prereq-box { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; }
+.prereq-box h3 { margin-bottom: 0.75rem; }
+.prereq-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0; font-size: 0.9rem; }
+.prereq-icon { font-size: 1.2rem; }
+.toc-box { background: #fff; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 2.5rem; }
+.toc-box h3 { margin-bottom: 0.75rem; font-size: 0.95rem; }
+.toc-box a { display: block; padding: 0.35rem 0; color: var(--accent-blue); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+.toc-box a:hover { text-decoration: underline; }
+.guide-section { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-color); }
+.section-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; }
+.section-icon { font-size: 2rem; flex-shrink: 0; margin-top: 2px; }
+.section-header h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.25rem; }
+.section-header p { color: var(--text-secondary); font-size: 0.9rem; margin: 0; }
+.guide-screenshot { margin: 1.5rem 0; text-align: center; }
+.guide-screenshot img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 16px rgba(0,0,0,0.08); transition: transform 0.3s; }
+.guide-screenshot img:hover { transform: scale(1.02); }
+.guide-screenshot figcaption { margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-light); }
+.sub-step { margin: 1.25rem 0; padding: 1rem 1.25rem; background: #f9fafb; border-radius: 10px; border-left: 3px solid var(--accent-blue); }
+.sub-step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary); }
+.sub-step ul { list-style: none; padding: 0; }
+.sub-step li { padding: 0.3rem 0; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; padding-left: 1.2rem; position: relative; }
+.sub-step li::before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: 700; }
+.tips-section { margin-bottom: 2rem; }
+.tips-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; }
+.tip-card { background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border: 1px solid #bfdbfe; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+.tip-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--accent-blue); }
+.tip-card p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+.back-link { display: inline-block; margin-top: 1rem; color: var(--accent-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+.back-link:hover { text-decoration: underline; }
+#scrollTopBtn { position: fixed; bottom: 2rem; right: 2rem; width: 44px; height: 44px; border-radius: 50%; background: var(--action-dark); color: #fff; border: none; font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.3s; z-index: 99; }
+#scrollTopBtn.visible { opacity: 1; }
+</style>
+</head>
+<body>
+<nav class="topbar-nav">
+<a href="index.html" class="topbar-logo"><div>
+<div class="logo-text">EYE TRACKING</div><div class="logo-sub">UXR PLAYER</div>
+</div></a>
+<div class="topbar-menu">
+<a href="record.html">🎥 Cam/Screen Record</a>
+<a href="eyetracking.html">👓 Eye Tracking</a>
+<a href="viewer.html">🗂️ Multi Viewer</a>
+</div>
+<div class="topbar-right"><span class="currentTimeDisplay"></span></div>
+</nav>
+<div class="layout-wrapper">
+<main class="main-content" style="overflow-y:auto;">
+<div class="guide-wrapper">
+
+<div class="guide-hero">
+<h1>📖 User Guide</h1>
+<p>Complete guide for the browser-based UXR Eye Tracking tool</p>
+<div class="workflow-diagram">
+<div class="wf-step">🎥 Record</div>
+<span class="wf-arrow">→</span>
+<div class="wf-step">👓 Analyze</div>
+<span class="wf-arrow">→</span>
+<div class="wf-step">🗂️ Report</div>
+</div>
+</div>
+
+<div class="prereq-box">
+<h3>Prerequisites</h3>
+<div class="prereq-item"><span class="prereq-icon">💻</span><span>PC Chrome Browser (latest version recommended)</span></div><div class="prereq-item"><span class="prereq-icon">📷</span><span>Webcam (built-in or external)</span></div><div class="prereq-item"><span class="prereq-icon">🎤</span><span>Microphone (for voice recording)</span></div>
+</div>
+
+<div class="toc-box">
+<h3>Table of Contents</h3>
+<a href="#step1">Step 1: Cam/Screen Recording</a>
+<a href="#step2">Step 2: Eye Tracking Analysis</a>
+<a href="#step3">Step 3: Multi Viewer</a>
+<a href="#tips">💡 Tips & FAQ</a>
+</div>
+
+
+<section class="guide-section" id="step1">
+<div class="section-header"><span class="section-icon">🎥</span><div><h2>Step 1: Cam/Screen Recording</h2><p>Record webcam and screen simultaneously to collect UX research data.</p></div></div>
+<figure class="guide-screenshot"><img src="static/img/guide/record_page.png" alt="Step 1: Cam/Screen Recording"><figcaption>Step 1: Cam/Screen Recording</figcaption></figure>
+
+<div class="sub-step"><h3>1-1. Connect Webcam (Face View)</h3><ul><li>Click the "Reconnect" button.</li><li>Allow camera/microphone access in the browser.</li><li>On success, the status badge turns green "Connected".</li><li>The audio level meter (🎤) activates to show mic input.</li></ul></div><div class="sub-step"><h3>1-2. Connect Screen (Screen View)</h3><ul><li>Click the "Reconnect" button.</li><li>Select the screen to share (Entire Screen / Window / Tab).</li><li>⚠️ <strong>Make sure to check "Share system audio"!</strong> Without it, device sound will not be recorded.</li><li>On success, the status badge turns green "Connected".</li></ul></div><div class="sub-step"><h3>1-3. Start and Stop Recording</h3><ul><li><strong>"● Start Record"</strong> button starts recording and the timer begins.</li><li>During recording, the status badge changes to red "● Recording".</li><li><strong>"■ Stop Record"</strong> button stops the recording.</li><li>Recording files are automatically downloaded: <code>record_face_DATE_TIME.webm</code>, <code>record_screen_DATE_TIME.webm</code></li></ul></div><div class="sub-step"><h3>1-4. Check Progress Log</h3><ul><li>Check the "📋 Progress Log" panel at the bottom for real-time action history.</li></ul></div>
+</section>
+<section class="guide-section" id="step2">
+<div class="section-header"><span class="section-icon">👓</span><div><h2>Step 2: Eye Tracking Analysis</h2><p>Track gaze from recorded videos using MediaPipe and generate result videos.</p></div></div>
+<figure class="guide-screenshot"><img src="static/img/guide/eyetracking_page.png" alt="Step 2: Eye Tracking Analysis"><figcaption>Step 2: Eye Tracking Analysis</figcaption></figure>
+<figure class="guide-screenshot"><img src="static/img/guide/eyetracking_settings.png" alt="Eye Tracking Settings Panel"><figcaption>Eye Tracking Settings Panel</figcaption></figure>
+<div class="sub-step"><h3>2-1. Load Videos</h3><ul><li>Click the <strong>Face View</strong> area (📂) to select the Face recording file.</li><li>Click the <strong>Screen / Game View</strong> area (📂) to select the Screen recording file.</li><li>Supported formats: MP4, WebM</li></ul></div><div class="sub-step"><h3>2-2. Configure Analysis Options</h3><ul><li><strong>Filename</strong>: Set the output filename.</li><li><strong>Optimize</strong> (default): Default parameters are applied automatically. Sufficient for most cases.</li><li><strong>Fine-Tune</strong>: Manually adjust parameters (sensitivity, Y-axis baseline, X-axis scale, etc.).</li></ul></div><div class="sub-step"><h3>2-3. Sampling and Analysis</h3><ul><li><strong>"🔍 Sampling (10%)"</strong>: Quickly analyze 10% of the video for preview.</li><li><strong>"👓 Start Analysis"</strong>: Start full gaze tracking analysis.</li><li><strong>"🛑 Stop Analysis"</strong>: Stop the ongoing analysis.</li><li>When analysis is complete, the result video is automatically downloaded.</li></ul></div>
+</section>
+<section class="guide-section" id="step3">
+<div class="section-header"><span class="section-icon">🗂️</span><div><h2>Step 3: Multi Viewer</h2><p>Synchronize Face View and Screen View for integrated analysis.</p></div></div>
+<figure class="guide-screenshot"><img src="static/img/guide/viewer_page.png" alt="Step 3: Multi Viewer"><figcaption>Step 3: Multi Viewer</figcaption></figure>
+
+<div class="sub-step"><h3>3-1. Load Videos</h3><ul><li>Click <strong>"📁 Open"</strong> on each card to select video files.</li><li>Load videos separately for Face View and Screen View.</li></ul></div><div class="sub-step"><h3>3-2. Synchronized Playback</h3><ul><li><strong>"▶ Play"</strong> button plays/pauses all videos simultaneously.</li><li>Master timeline slider synchronizes playback position across all videos.</li><li><strong>"🔄 Reset"</strong> button resets all videos to initial state.</li></ul></div><div class="sub-step"><h3>3-3. Layout and Widget Management</h3><ul><li><strong>"🔄 Toggle Layout"</strong>: Switch between vertical/horizontal layout.</li><li><strong>Screen Height</strong> slider adjusts card height.</li><li>Drag the <strong>⋮⋮</strong> handle on card headers to reorder.</li><li><strong>🗑️</strong> icon removes unnecessary widgets.</li></ul></div>
+</section>
+
+<section class="tips-section" id="tips">
+<h2>💡 Tips & FAQ</h2>
+<div class="tip-card"><h4>Recommended Browser</h4><p>Best performance on latest PC Chrome. Chrome 94+ with WebCodecs API support is recommended.</p></div><div class="tip-card"><h4>Recording Format</h4><p>Saved in WebM format (VP9 codec). Convert to MP4 using external tools if needed.</p></div><div class="tip-card"><h4>System Audio Issue</h4><p>If "Share system audio" option is not visible, select "Entire Screen" or "Chrome Tab".</p></div><div class="tip-card"><h4>Fine-Tune Recommended Values</h4><p>Default optimization mode is sufficient for most cases. Use fine-tuning only when results are inaccurate.</p></div>
+</section>
+
+<a href="index.html" class="back-link">← Back to Main</a>
+</div>
+</main>
+</div>
+
+<button id="scrollTopBtn" onclick="document.querySelector('.main-content').scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+const mc = document.querySelector('.main-content');
+const btn = document.getElementById('scrollTopBtn');
+if(mc && btn) mc.addEventListener('scroll', () => {
+  btn.classList.toggle('visible', mc.scrollTop > 300);
+});
+</script>
+</body>
+</html>
